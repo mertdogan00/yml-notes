@@ -1,0 +1,135 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+
+    # -------------------------------------------------
+    # PUBLIC ENTRYPOINTS
+    # -------------------------------------------------
+    ports:
+      - "80:80"
+      - "443:443"
+
+    # -------------------------------------------------
+    # ENVIRONMENT
+    # -------------------------------------------------
+    environment:
+      EMAIL: ${EMAIL}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+
+    # -------------------------------------------------
+    # STATIC CONFIGURATION (EDGE LEVEL)
+    # -------------------------------------------------
+    command:
+      # =========================
+      # PROVIDER (CHOOSE ONE!)
+      # =========================
+
+      # --- Docker (ACTIVE) ---
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      # --- Docker Swarm (DO NOT ENABLE TOGETHER) ---
+      # - --providers.docker.swarmMode=true
+
+      # --- Kubernetes (DO NOT ENABLE TOGETHER) ---
+      # - --providers.kubernetescrd=true
+      # - --providers.kubernetesingress=true
+
+      # =========================
+      # ENTRYPOINTS
+      # =========================
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      # =========================
+      # FORCE HTTPS
+      # =========================
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+
+      # =========================
+      # DASHBOARD
+      # =========================
+      - --api.dashboard=true
+
+      # =========================
+      # ACME – DNS-01 (CLOUDFLARE)
+      # =========================
+      - --certificatesresolvers.cloudflare.acme.email=${EMAIL}
+      - --certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.cloudflare.acme.dnschallenge=true
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+
+      # =========================
+      # LOGGING
+      # =========================
+      - --log.level=INFO
+      - --accesslog=true
+      - --accesslog.filepath=/logs/access.log
+
+    # -------------------------------------------------
+    # DYNAMIC CONFIG (LABELS)
+    # -------------------------------------------------
+    labels:
+      - traefik.enable=true
+
+      # -------------------------
+      # DASHBOARD ROUTER
+      # -------------------------
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=cloudflare
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.priority=1000
+
+      # -------------------------
+      # DASHBOARD AUTH
+      # -------------------------
+      - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}
+
+      # -------------------------
+      # SECURITY HEADERS
+      # -------------------------
+      - traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.secure-headers.headers.stsPreload=true
+      - traefik.http.middlewares.secure-headers.headers.browserXssFilter=true
+      - traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.secure-headers.headers.frameDeny=true
+
+      # -------------------------
+      # RATE LIMIT
+      # -------------------------
+      - traefik.http.middlewares.ratelimit.ratelimit.average=100
+      - traefik.http.middlewares.ratelimit.ratelimit.burst=200
+
+      # -------------------------
+      # GLOBAL MIDDLEWARE CHAIN
+      # -------------------------
+      - traefik.http.middlewares.global.chain.middlewares=secure-headers,ratelimit
+      - traefik.http.routers.traefik.middlewares=global,traefik-auth
+
+    # -------------------------------------------------
+    # VOLUMES
+    # -------------------------------------------------
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./logs:/logs
+
+    # -------------------------------------------------
+    # NETWORK
+    # -------------------------------------------------
+    networks:
+      - traefik-net
+
+# -------------------------------------------------
+# EXTERNAL NETWORK
+# -------------------------------------------------
+networks:
+  traefik-net:
+    external: true
