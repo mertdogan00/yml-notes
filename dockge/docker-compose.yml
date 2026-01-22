@@ -1,0 +1,66 @@
+services:
+  dockge:
+    # -------------------------
+    # IMAGE / CONTAINER
+    # -------------------------
+    image: louislam/dockge:latest
+    container_name: dockge
+    restart: unless-stopped
+
+    # -------------------------
+    # PORTS (DIRECT ACCESS)
+    # -------------------------
+    #  ports:
+    #   - "5001:5001"
+
+    # -------------------------
+    # VOLUMES
+    # -------------------------
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/dockge:/app/data
+      - /opt/stacks:/opt/stacks
+
+    # -------------------------
+    # ENVIRONMENT
+    # -------------------------
+    environment:
+      - DOCKGE_STACKS_DIR=/opt/stacks
+      - DOCKGE_ENABLE_CONSOLE=true
+
+    # -------------------------
+    # NETWORKS
+    # -------------------------
+    networks:
+      - traefik-net
+
+    labels:
+      # -------------------------
+      # ENABLE TRAEFIK
+      # -------------------------
+      - traefik.enable=true
+
+      # -------------------------
+      # ROUTER (DOCKGE)
+      # -------------------------
+      - traefik.http.routers.dockge.rule=Host(`${DOCKGE_DOMAIN}`)
+      - traefik.http.routers.dockge.entrypoints=websecure
+      - traefik.http.routers.dockge.tls=true
+      - traefik.http.routers.dockge.tls.certresolver=cloudflare
+
+      # -------------------------
+      # MIDDLEWARES
+      # -------------------------
+      - traefik.http.routers.dockge.middlewares=global
+
+      # -------------------------
+      # SERVICE PORT
+      # -------------------------
+      - traefik.http.services.dockge.loadbalancer.server.port=5001
+
+networks:
+  # -------------------------
+  # EXTERNAL NETWORK
+  # -------------------------
+  traefik-net:
+    external: true

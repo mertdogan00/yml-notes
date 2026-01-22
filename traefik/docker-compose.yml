@@ -74,6 +74,9 @@ services:
     # DYNAMIC CONFIG (LABELS)
     # -------------------------------------------------
     labels:
+      #---------------------------
+      # ENABLE TRAEFIK FOR THIS CONTAINER
+      #---------------------------
       - traefik.enable=true
 
       # -------------------------
@@ -87,28 +90,28 @@ services:
       - traefik.http.routers.traefik.priority=1000
 
       # -------------------------
-      # DASHBOARD AUTH
+      # DASHBOARD AUTH (APP-SPECIFIC IS RECOMMENDED)
       # -------------------------
       - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}
 
       # -------------------------
-      # SECURITY HEADERS
+      # SECURITY HEADERS (REUSABLE MIDDLEWARE; NOT GLOBAL UNTIL ATTACHED)
       # -------------------------
       - traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000
       - traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true
-      - traefik.http.middlewares.secure-headers.headers.stsPreload=true
+      - traefik.http.middlewares.secure-headers.headers.stsPreload=false
       - traefik.http.middlewares.secure-headers.headers.browserXssFilter=true
       - traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true
       - traefik.http.middlewares.secure-headers.headers.frameDeny=true
 
       # -------------------------
-      # RATE LIMIT
+      # RATE LIMIT (REUSABLE MIDDLEWARE; NOT GLOBAL UNTIL ATTACHED)
       # -------------------------
       - traefik.http.middlewares.ratelimit.ratelimit.average=100
       - traefik.http.middlewares.ratelimit.ratelimit.burst=200
 
       # -------------------------
-      # GLOBAL MIDDLEWARE CHAIN
+      # GLOBAL MIDDLEWARE CHAIN (APPLIED WHERE REFERENCED)
       # -------------------------
       - traefik.http.middlewares.global.chain.middlewares=secure-headers,ratelimit
       - traefik.http.routers.traefik.middlewares=global,traefik-auth
