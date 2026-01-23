@@ -1,0 +1,240 @@
+# ============================================================================
+# Pre-deployment:
+#   mkdir -p /opt/volumes/espocrm/{db,data}
+#   chown -R 33:33 /opt/volumes/espocrm
+#   chmod -R 755 /opt/volumes/espocrm
+#
+# Notes:
+# - UID 33 (www-data) is required for write access
+# - Database credentials are applied only on first initialization
+# - No container exposes ports directly to the host
+# - Traefik handles TLS termination and routing
+#
+# ============================================================================
+
+# -------------------------------------------------
+# DOCKER COMPOSE FILE FOR ESPOCRM
+# -------------------------------------------------
+
+services:
+  # --------------------------------------------------------------------------
+  # MariaDB – Application Database
+  # --------------------------------------------------------------------------
+  espocrm-db:
+    # -------------------------
+    # IMAGE / CONTAINER
+    # -------------------------
+    image: mariadb:latest
+    container_name: espocrm-db
+    restart: unless-stopped
+
+    # -------------------------
+    # ENVIRONMENT
+    # -------------------------
+    environment:
+      # Root credentials (administrative access only)
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      # Application database and user
+      MARIADB_DATABASE: espocrm
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: ${DB_APP_PASSWORD}
+
+    # -------------------------
+    # VOLUMES
+    # -------------------------
+    volumes:
+      # Persistent database storage
+      - /opt/volumes/espocrm/db:/var/lib/mysql
+
+    # -------------------------
+    # HEALTHCHECK
+    # -------------------------
+    healthcheck:
+      # Prevents application startup before DB readiness
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      interval: 20s
+      timeout: 10s
+      retries: 3
+
+    # -------------------------
+    # NETWORKS
+    # -------------------------
+    networks:
+      - traefik-net
+
+  # --------------------------------------------------------------------------
+  # EspoCRM – Web Application
+  # --------------------------------------------------------------------------
+  espocrm:
+    # -------------------------
+    # IMAGE / CONTAINER
+    # -------------------------
+    image: espocrm/espocrm
+    container_name: espocrm
+    restart: unless-stopped
+
+    # -------------------------
+    # DEPENDS ON
+    # -------------------------
+    depends_on:
+      # Ensures DB is fully initialized
+      espocrm-db:
+        condition: service_healthy
+
+    # -------------------------
+    # ENVIRONMENT
+    # -------------------------
+    environment:
+      # Database connection
+      ESPOCRM_DATABASE_PLATFORM: Mysql
+      ESPOCRM_DATABASE_HOST: espocrm-db
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${DB_APP_PASSWORD}
+      # Initial admin account
+      ESPOCRM_ADMIN_USERNAME: ${ESPOCRM_ADMIN_USERNAME}
+      ESPOCRM_ADMIN_PASSWORD: ${ESPOCRM_ADMIN_PASSWORD}
+      # Public URL used by EspoCRM internally
+      ESPOCRM_SITE_URL: ${ESPOCRM_PUBLIC_URL}
+
+    # -------------------------
+    # VOLUMES
+    # -------------------------
+    volumes:
+      # Shared application data (config, cache, uploads)
+      - /opt/volumes/espocrm/data:/var/www/html
+
+    # -------------------------
+    # LABELS
+    # -------------------------
+    labels:
+      # -------------------------
+      # ENABLE TRAEFIK
+      # -------------------------
+      - traefik.enable=true
+
+      # -------------------------
+      # ROUTER (ESP OCRM)
+      # -------------------------
+      - traefik.http.routers.espocrm.rule=Host(`${ESPOCRM_PUBLIC_HOST}`)
+      - traefik.http.routers.espocrm.entrypoints=websecure
+      - traefik.http.routers.espocrm.tls=true
+      - traefik.http.routers.espocrm.tls.certresolver=certs
+
+      # -------------------------
+      # SERVICE PORT
+      # -------------------------
+      - traefik.http.services.espocrm.loadbalancer.server.port=80
+
+    # -------------------------
+    # NETWORKS
+    # -------------------------
+    networks:
+      - traefik-net
+
+  # --------------------------------------------------------------------------
+  # EspoCRM – Background Worker
+  # --------------------------------------------------------------------------
+  espocrm-daemon:
+    # -------------------------
+    # IMAGE / CONTAINER
+    # -------------------------
+    image: espocrm/espocrm
+    container_name: espocrm-daemon
+    restart: unless-stopped
+    entrypoint: docker-daemon.sh
+
+    # -------------------------
+    # VOLUMES
+    # -------------------------
+    volumes:
+      # Uses the same application data as the web container
+      - /opt/volumes/espocrm/data:/var/www/html
+
+    # -------------------------
+    # DEPENDS ON
+    # -------------------------
+    depends_on:
+      - espocrm
+
+    # -------------------------
+    # NETWORKS
+    # -------------------------
+    networks:
+      - traefik-net
+
+  # --------------------------------------------------------------------------
+  # EspoCRM – WebSocket Service
+  # --------------------------------------------------------------------------
+  espocrm-websocket:
+    # -------------------------
+    # IMAGE / CONTAINER
+    # -------------------------
+    image: espocrm/espocrm
+    container_name: espocrm-websocket
+    restart: unless-stopped
+    entrypoint: docker-websocket.sh
+
+    # -------------------------
+    # ENVIRONMENT
+    # -------------------------
+    environment:
+      # Enables real-time features (notifications, live updates)
+      ESPOCRM_CONFIG_USE_WEB_SOCKET: "true"
+      # Public WebSocket endpoint exposed via Traefik
+      ESPOCRM_CONFIG_WEB_SOCKET_URL: ${ESPOCRM_WEBSOCKET_URL}
+      # Internal ZeroMQ communication
+      ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBSCRIBER_DSN: tcp://*:7777
+      ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBMISSION_DSN: tcp://espocrm-websocket:7777
+
+    # -------------------------
+    # VOLUMES
+    # -------------------------
+    volumes:
+      # Shared application data
+      - /opt/volumes/espocrm/data:/var/www/html
+
+    # -------------------------
+    # LABELS
+    # -------------------------
+    labels:
+      # -------------------------
+      # ENABLE TRAEFIK
+      # -------------------------
+      - traefik.enable=true
+
+      # -------------------------
+      # ROUTER (WEBSOCKET)
+      # -------------------------
+      - traefik.http.routers.espocrm-ws.rule=Host(`${ESPOCRM_PUBLIC_HOST}`) && PathPrefix(`/ws`)
+      - traefik.http.routers.espocrm-ws.entrypoints=websecure
+      - traefik.http.routers.espocrm-ws.tls=true
+      - traefik.http.routers.espocrm-ws.tls.certresolver=certs
+
+      # -------------------------
+      # SERVICE PORT
+      # -------------------------
+      - traefik.http.services.espocrm-ws.loadbalancer.server.port=8080
+
+    # -------------------------
+    # NETWORKS
+    # -------------------------
+    networks:
+      - traefik-net
+
+# --------------------------------------------------------------------------
+# External Network (Traefik)
+# --------------------------------------------------------------------------
+networks:
+  traefik-net:
+    external: true
+
+# --------------------------------------------------------------------------
+# Dockge Metadata
+# --------------------------------------------------------------------------
+x-dockge:
+  urls:
+    - https://apps-crm.framepx.com/

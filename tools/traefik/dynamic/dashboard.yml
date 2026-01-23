@@ -1,0 +1,44 @@
+http:
+  # =================================================
+  # TRAEFIK DASHBOARD ROUTER
+  # This router exposes Traefik's internal API/UI
+  # =================================================
+  routers:
+    traefik-dashboard:
+      # ---------------------------------------------
+      # Domain rule for the dashboard
+      # Example: traefik.example.com
+      # ---------------------------------------------
+      rule: "Host(`${TRAEFIK_DOMAIN}`)"
+
+      # ---------------------------------------------
+      # HTTPS only
+      # ---------------------------------------------
+      entryPoints:
+        - websecure
+
+      # ---------------------------------------------
+      # Middlewares applied to the dashboard
+      # - global        → security headers + rate limit
+      # - basic-auth    → protect dashboard access
+      # ---------------------------------------------
+      middlewares:
+        - global
+        - basic-auth
+
+      # ---------------------------------------------
+      # Internal Traefik service
+      # (NOT a Docker container)
+      # ---------------------------------------------
+      service: api@internal
+
+      # ---------------------------------------------
+      # High priority to avoid rule conflicts
+      # ---------------------------------------------
+      priority: 1000
+
+      # ---------------------------------------------
+      # TLS configuration (Let's Encrypt)
+      # ---------------------------------------------
+      tls:
+        certResolver: certs

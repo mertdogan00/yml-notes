@@ -1,3 +1,7 @@
+# -------------------------------------------------
+# DOCKER COMPOSE FILE FOR DOCKGE
+# -------------------------------------------------
+
 services:
   dockge:
     # -------------------------
@@ -46,12 +50,12 @@ services:
       - traefik.http.routers.dockge.rule=Host(`${DOCKGE_DOMAIN}`)
       - traefik.http.routers.dockge.entrypoints=websecure
       - traefik.http.routers.dockge.tls=true
-      - traefik.http.routers.dockge.tls.certresolver=cloudflare
+      - traefik.http.routers.dockge.tls.certresolver=certs
 
       # -------------------------
       # MIDDLEWARES
       # -------------------------
-      - traefik.http.routers.dockge.middlewares=global
+      - traefik.http.routers.dockge.middlewares=global@file
 
       # -------------------------
       # SERVICE PORT

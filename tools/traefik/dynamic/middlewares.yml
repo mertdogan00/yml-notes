@@ -1,0 +1,55 @@
+http:
+  # =================================================
+  # MIDDLEWARE DEFINITIONS
+  # These define HOW traffic behaves.
+  # They do NOTHING unless attached to a router.
+  # =================================================
+  middlewares:
+    # -------------------------------------------------
+    # SECURITY HEADERS
+    # Enforces basic HTTP security best practices
+    # -------------------------------------------------
+    secure-headers:
+      headers:
+        # Enable HSTS for 1 year
+        stsSeconds: 31536000
+
+        # Apply HSTS to all subdomains
+        stsIncludeSubdomains: true
+
+        # Disable HSTS preload (enable only if domain is ready)
+        stsPreload: false
+
+        # Enable basic XSS protection
+        browserXssFilter: true
+
+        # Prevent MIME type sniffing
+        contentTypeNosniff: true
+
+        # Prevent the site from being embedded in iframes
+        frameDeny: true
+
+    # -------------------------------------------------
+    # RATE LIMIT
+    # Protects services from abuse and basic DoS attacks
+    # -------------------------------------------------
+    ratelimit:
+      rateLimit:
+        # Average number of requests per second
+        average: 100
+
+        # Allowed burst before limiting kicks in
+        burst: 200
+
+    # -------------------------------------------------
+    # GLOBAL MIDDLEWARE CHAIN
+    # Default security policy applied to protected routers
+    # -------------------------------------------------
+    global:
+      chain:
+        middlewares:
+          # Standard security headers
+          - secure-headers
+
+          # Request rate limiting
+          - ratelimit

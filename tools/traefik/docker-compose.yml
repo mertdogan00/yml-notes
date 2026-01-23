@@ -1,0 +1,110 @@
+# -------------------------------------------------
+# DOCKER COMPOSE FILE FOR TRAEFIK v3.0
+# -------------------------------------------------
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+
+    # -------------------------------------------------
+    # PUBLIC ENTRYPOINTS
+    # -------------------------------------------------
+    ports:
+      - "80:80"
+      - "443:443"
+
+    # -------------------------------------------------
+    # ENVIRONMENT VARIABLES
+    # -------------------------------------------------
+    environment:
+      EMAIL: ${EMAIL}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+
+    # -------------------------------------------------
+    # STATIC CONFIGURATION (EDGE LEVEL)
+    # NOTE:
+    # - Anything here requires Traefik restart
+    # - Defines HOW Traefik works
+    # -------------------------------------------------
+    command:
+      # =========================
+      # PROVIDERS
+      # =========================
+
+      # --- Docker Provider ---
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      # --- File Provider (Dynamic YAML) ---
+      - --providers.file.directory=/dynamic
+      - --providers.file.watch=true
+
+      # =========================
+      # ENTRYPOINTS
+      # =========================
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      # =========================
+      # FORCE HTTPS REDIRECT
+      # =========================
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+
+      # =========================
+      # DASHBOARD
+      # =========================
+      - --api.dashboard=true
+
+      # =========================
+      # CERTIFICATES (ACME)
+      # =========================
+      - --certificatesresolvers.certs.acme.email=${EMAIL}
+      - --certificatesresolvers.certs.acme.storage=/letsencrypt/acme.json
+
+      # --- DNS-01 Challenge (Cloudflare) ---
+      - --certificatesresolvers.certs.acme.dnschallenge=true
+      - --certificatesresolvers.certs.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.certs.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+
+      # --- HTTP-01 Fallback ---
+      - --certificatesresolvers.certs.acme.httpchallenge=true
+      - --certificatesresolvers.certs.acme.httpchallenge.entrypoint=web
+
+      # =========================
+      # LOGGING
+      # =========================
+      - --log.level=INFO
+      - --accesslog=true
+
+    # -------------------------------------------------
+    # DYNAMIC CONFIGURATION
+    # NOTE:
+    # - Routing & middlewares live in dynamic.yml
+    # - No restart required for changes
+    # -------------------------------------------------
+    labels:
+      - traefik.enable=true
+
+    # -------------------------------------------------
+    # VOLUMES
+    # -------------------------------------------------
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dynamic:/dynamic
+      - ./letsencrypt:/letsencrypt
+
+    # -------------------------------------------------
+    # NETWORK
+    # -------------------------------------------------
+    networks:
+      - traefik-net
+
+# -------------------------------------------------
+# EXTERNAL NETWORK
+# -------------------------------------------------
+networks:
+  traefik-net:
+    external: true

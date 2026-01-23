@@ -1,0 +1,45 @@
+http:
+  # =================================================
+  # AUTHENTICATION MIDDLEWARES
+  #
+  # These middlewares do NOT authenticate users
+  # themselves. They delegate the decision to an
+  # external authentication service.
+  #
+  # Traefik only ENFORCES the decision.
+  # =================================================
+  middlewares:
+    # -------------------------------------------------
+    # FORWARD AUTH
+    #
+    # Purpose:
+    # - Delegates authentication to an external service
+    # - Backend applications remain completely auth-free
+    #
+    # Flow:
+    # Client -> Traefik -> Auth Service
+    #
+    # Auth Service responses:
+    # - 200 OK        -> request is forwarded to backend
+    # - 401 / 403    -> request is blocked
+    # - 302 / 307    -> client is redirected to login
+    # -------------------------------------------------
+    forward-auth:
+      forwardAuth:
+        # Address of the authentication service
+        # Must be reachable from the Traefik container
+        # (i.e. same Docker network)
+        address: http://auth:4180
+
+        # Trust X-Forwarded-* headers returned by the
+        # authentication service
+        trustForwardHeader: true
+
+        # List of headers that will be copied from the
+        # auth service response and forwarded to the backend
+        #
+        # These headers usually contain user identity info
+        authResponseHeaders:
+          - X-Forwarded-User
+          - X-Forwarded-Email
+          - X-Forwarded-Groups

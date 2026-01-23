@@ -1,0 +1,10 @@
+http:
+  middlewares:
+    # -------------------------------------------------
+    # BASIC AUTH
+    # Basit HTTP authentication
+    # -------------------------------------------------
+    basic-auth:
+      basicAuth:
+        users:
+          - ${BASIC_AUTH_USERS}
