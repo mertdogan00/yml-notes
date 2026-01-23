@@ -1,0 +1,15 @@
+#============================================================
+# Docker Compose configuration for Development Container
+#============================================================
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: dev-container
+    volumes:
+      - .:/workspaces
+    working_dir: /workspaces/
+    command: sleep infinity
+    tty: true

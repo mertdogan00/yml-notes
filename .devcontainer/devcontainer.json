@@ -1,0 +1,17 @@
+{
+  "name": "yml-notes-devcontainer",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": ["redhat.ansible", "redhat.vscode-yaml"],
+      "settings": {
+        "editor.formatOnSave": true,
+        "yaml.validate": true,
+        "ansible.validation.enabled": true
+      }
+    }
+  }
+}
