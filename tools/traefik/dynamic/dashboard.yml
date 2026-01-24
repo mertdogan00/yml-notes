@@ -20,11 +20,11 @@ http:
       # ---------------------------------------------
       # Middlewares applied to the dashboard
       # - global        → security headers + rate limit
-      # - basic-auth    → protect dashboard access
+      # - forward-auth  → Authelia protection
       # ---------------------------------------------
       middlewares:
         - global
-        - basic-auth
+        - forward-auth
 
       # ---------------------------------------------
       # Internal Traefik service

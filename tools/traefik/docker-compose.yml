@@ -93,8 +93,8 @@ services:
     # -------------------------------------------------
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./dynamic:/dynamic
-      - ./letsencrypt:/letsencrypt
+      - /opt/volumes/traefik/dynamic:/dynamic
+      - /opt/volumes/traefik/letsencrypt:/letsencrypt
 
     # -------------------------------------------------
     # NETWORK
