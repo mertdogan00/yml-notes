@@ -37,7 +37,7 @@ services:
       # =========================
 
       # --- File Provider (Dynamic YAML) ---
-      - --providers.file.directory=/dynamic-min
+      - --providers.file.directory=/dynamic
       - --providers.file.watch=true
 
       # =========================
