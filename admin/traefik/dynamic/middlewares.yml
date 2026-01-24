@@ -49,7 +49,7 @@ http:
       chain:
         middlewares:
           # Standard security headers
-          - secure-headers
+          - secure-headers@file
 
           # Request rate limiting
-          - ratelimit
+          - ratelimit@file

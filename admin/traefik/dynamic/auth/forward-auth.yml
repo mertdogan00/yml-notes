@@ -2,22 +2,22 @@ http:
   # =================================================
   # AUTHELIA FORWARD AUTH
   #
-  # Traefik delegates auth to Authelia.
-  # Authelia decides allow/deny/redirect.
+  # Traefik delegates authentication to Authelia.
+  # Authelia decides allow / deny / redirect.
   # =================================================
   middlewares:
     forward-auth:
       forwardAuth:
-        # Authelia verify endpoint
-        # Must be reachable from Traefik (same network)
-        address: http://authelia:9091/api/verify?rd=https://${AUTHELIA_DOMAIN}/
+        # Authelia verification endpoint
+        # Must be reachable from Traefik (same Docker network)
+        address: 'http://authelia:9091/api/verify?rd=https://{{ env "AUTHELIA_DOMAIN" }}/'
 
         # Trust X-Forwarded-* headers returned by Authelia
         trustForwardHeader: true
 
         # Identity headers forwarded to the backend
         authResponseHeaders:
-          - Remote-User
-          - Remote-Email
-          - Remote-Groups
-          - Remote-Name
+          - X-Auth-User
+          - X-Auth-Email
+          - X-Auth-Groups
+          - X-Auth-Name

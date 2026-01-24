@@ -9,7 +9,7 @@ http:
       # Domain rule for the dashboard
       # Example: traefik.example.com
       # ---------------------------------------------
-      rule: "Host(`${TRAEFIK_DOMAIN}`)"
+      rule: 'Host(`{{ env "TRAEFIK_DOMAIN" }}`)'
 
       # ---------------------------------------------
       # HTTPS only
@@ -23,8 +23,8 @@ http:
       # - forward-auth  → Authelia protection
       # ---------------------------------------------
       middlewares:
-        - global
-        - forward-auth
+        - global@file
+        - forward-auth@file
 
       # ---------------------------------------------
       # Internal Traefik service

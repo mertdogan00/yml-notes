@@ -1,0 +1,15 @@
+http:
+  middlewares:
+    # -------------------------------------------------
+    # BASIC AUTH MIDDLEWARE
+    #
+    # Simple HTTP Basic Authentication.
+    # Commonly used to protect the Traefik dashboard
+    # or as a fallback when SSO is unavailable.
+    # -------------------------------------------------
+    basic-auth:
+      basicAuth:
+        # List of users in htpasswd format
+        # Value is injected from environment variable
+        users:
+          - '{{ env "BASIC_AUTH_USERS" }}'
