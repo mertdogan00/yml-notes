@@ -4,7 +4,7 @@
 
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3
     container_name: traefik
     restart: unless-stopped
 
@@ -36,12 +36,8 @@ services:
       # PROVIDERS
       # =========================
 
-      # --- Docker Provider ---
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-
       # --- File Provider (Dynamic YAML) ---
-      - --providers.file.directory=/dynamic
+      - --providers.file.directory=/dynamic-min
       - --providers.file.watch=true
 
       # =========================
@@ -95,8 +91,7 @@ services:
     # VOLUMES
     # -------------------------------------------------
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/volumes/traefik/dynamic:/dynamic
+      - /home/mertdogan/Documents/Projects/yml-notes/admin/traefik/dynamic-min:/dynamic-min:ro
       - /opt/volumes/traefik/letsencrypt:/letsencrypt
 
     # -------------------------------------------------
