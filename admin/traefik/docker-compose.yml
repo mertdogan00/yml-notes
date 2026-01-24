@@ -21,6 +21,9 @@ services:
     environment:
       EMAIL: ${EMAIL}
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      TRAEFIK_DOMAIN: ${TRAEFIK_DOMAIN}
+      AUTHELIA_DOMAIN: ${AUTHELIA_DOMAIN}
+      BASIC_AUTH_USERS: ${BASIC_AUTH_USERS}
 
     # -------------------------------------------------
     # STATIC CONFIGURATION (EDGE LEVEL)
