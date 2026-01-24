@@ -123,6 +123,7 @@ services:
       - traefik.http.routers.espocrm.entrypoints=websecure
       - traefik.http.routers.espocrm.tls=true
       - traefik.http.routers.espocrm.tls.certresolver=certs
+      - traefik.http.routers.espocrm.middlewares=global@file,forward-auth@file
 
       # -------------------------
       # SERVICE PORT
@@ -213,6 +214,7 @@ services:
       - traefik.http.routers.espocrm-ws.entrypoints=websecure
       - traefik.http.routers.espocrm-ws.tls=true
       - traefik.http.routers.espocrm-ws.tls.certresolver=certs
+      - traefik.http.routers.espocrm-ws.middlewares=global@file,forward-auth@file
 
       # -------------------------
       # SERVICE PORT

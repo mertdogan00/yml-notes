@@ -1,36 +1,31 @@
 # -------------------------------------------------
-# DOCKER COMPOSE FILE FOR DOCKGE
+# DOCKER COMPOSE FILE FOR AUTHELIA
 # -------------------------------------------------
 
 services:
-  dockge:
+  authelia:
     # -------------------------
     # IMAGE / CONTAINER
     # -------------------------
-    image: louislam/dockge:latest
-    container_name: dockge
+    image: authelia/authelia:latest
+    container_name: authelia
     restart: unless-stopped
 
     # -------------------------
-    # PORTS (DIRECT ACCESS)
-    # -------------------------
-    #  ports:
-    #   - "5001:5001"
-
-    # -------------------------
-    # VOLUMES
+    # CONFIG / DATA
     # -------------------------
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/dockge:/app/data
-      - /opt/stacks:/opt/stacks
+      - /opt/volumes/authelia/config:/config
+      - /opt/volumes/authelia/data:/data
 
     # -------------------------
     # ENVIRONMENT
     # -------------------------
+    env_file:
+      - .env
     environment:
-      - DOCKGE_STACKS_DIR=/opt/stacks
-      - DOCKGE_ENABLE_CONSOLE=true
+      - TZ=${TZ}
+      - AUTHELIA_CONFIG=/config/configuration.yml
 
     # -------------------------
     # NETWORKS
@@ -45,22 +40,22 @@ services:
       - traefik.enable=true
 
       # -------------------------
-      # ROUTER (DOCKGE)
+      # ROUTER (AUTHELIA PORTAL)
       # -------------------------
-      - traefik.http.routers.dockge.rule=Host(`${DOCKGE_DOMAIN}`)
-      - traefik.http.routers.dockge.entrypoints=websecure
-      - traefik.http.routers.dockge.tls=true
-      - traefik.http.routers.dockge.tls.certresolver=certs
+      - traefik.http.routers.authelia.rule=Host(`${AUTHELIA_DOMAIN}`)
+      - traefik.http.routers.authelia.entrypoints=websecure
+      - traefik.http.routers.authelia.tls=true
+      - traefik.http.routers.authelia.tls.certresolver=certs
 
       # -------------------------
       # MIDDLEWARES
       # -------------------------
-      - traefik.http.routers.dockge.middlewares=global@file,forward-auth@file
+      - traefik.http.routers.authelia.middlewares=global@file
 
       # -------------------------
       # SERVICE PORT
       # -------------------------
-      - traefik.http.services.dockge.loadbalancer.server.port=5001
+      - traefik.http.services.authelia.loadbalancer.server.port=9091
 
 networks:
   # -------------------------

@@ -1,0 +1,105 @@
+# -------------------------------------------------
+# THEME
+# -------------------------------------------------
+# Options: auto | light | dark
+theme: auto
+
+# -------------------------------------------------
+# DEFAULT REDIRECT
+# -------------------------------------------------
+# Landing page after login
+default_redirection_url: https://${AUTHELIA_DOMAIN}/
+
+# -------------------------------------------------
+# SERVER
+# -------------------------------------------------
+# Listen address inside the container
+server:
+  address: tcp://0.0.0.0:9091
+
+# -------------------------------------------------
+# LOGGING
+# -------------------------------------------------
+log:
+  level: info
+
+# -------------------------------------------------
+# TOTP
+# -------------------------------------------------
+# Issuer name shown in authenticator apps
+totp:
+  issuer: ${AUTHELIA_DOMAIN}
+
+# -------------------------------------------------
+# AUTHENTICATION BACKEND
+# -------------------------------------------------
+# Local YAML users file
+authentication_backend:
+  file:
+    path: /config/users.yml
+    password:
+      algorithm: argon2id
+
+# -------------------------------------------------
+# ACCESS CONTROL (GROUP-BASED)
+# -------------------------------------------------
+access_control:
+  # Default: block everything unless allowed
+  default_policy: deny
+  rules:
+    # Authelia portal
+    - domain: ${AUTHELIA_DOMAIN}
+      policy: one_factor
+    # Admin-only apps
+    - domain: ${ADMIN_DOMAIN}
+      policy: one_factor
+      subject:
+        - "group:admins"
+    # Internal apps (admins + staff)
+    - domain: ${INTERNAL_DOMAIN}
+      policy: two_factor
+      subject:
+        - "group:admins"
+        - "group:staff"
+
+# -------------------------------------------------
+# SESSION
+# -------------------------------------------------
+session:
+  name: authelia_session
+  secret: ${AUTHELIA_SESSION_SECRET}
+  expiration: 1h
+  inactivity: 15m
+  domain: ${ROOT_DOMAIN}
+
+# -------------------------------------------------
+# REGULATION
+# -------------------------------------------------
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 5m
+
+# -------------------------------------------------
+# STORAGE
+# -------------------------------------------------
+storage:
+  local:
+    path: /data/db.sqlite3
+
+# -------------------------------------------------
+# NOTIFIER (SMTP)
+# If you don't want email, you can switch to
+# filesystem notifier instead:
+#
+# notifier:
+#   filesystem:
+#     filename: /data/notification.txt
+# -------------------------------------------------
+notifier:
+  smtp:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASS}
+    sender: ${SMTP_SENDER}

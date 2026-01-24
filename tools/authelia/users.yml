@@ -1,0 +1,30 @@
+# -------------------------------------------------
+# USERS
+# -------------------------------------------------
+# Passwords must be hashed (argon2id, bcrypt, etc.)
+#
+# Hash generation examples:
+#
+# 1) Interactive:
+#    docker run --rm -it authelia/authelia:latest \
+#      authelia crypto hash generate argon2
+#
+# 2) Non-interactive (with password):
+#    docker run --rm authelia/authelia:latest \
+#      authelia crypto hash generate argon2 \
+#      --password '123456' --no-confirm
+
+users:
+  admin:
+    displayname: "Admin User"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$CHANGE_ME$CHANGE_ME"
+    email: admin@example.com
+    groups:
+      - admins
+
+  staff:
+    displayname: "Staff User"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$CHANGE_ME$CHANGE_ME"
+    email: staff@example.com
+    groups:
+      - staff

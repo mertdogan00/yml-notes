@@ -8,3 +8,5 @@ http:
       basicAuth:
         users:
           - ${BASIC_AUTH_USERS}
+        # Generate with Docker (one-shot):
+        # docker run --rm httpd:2.4-alpine htpasswd -nb admin strongpassword

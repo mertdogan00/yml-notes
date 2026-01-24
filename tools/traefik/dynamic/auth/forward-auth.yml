@@ -1,45 +1,23 @@
 http:
   # =================================================
-  # AUTHENTICATION MIDDLEWARES
+  # AUTHELIA FORWARD AUTH
   #
-  # These middlewares do NOT authenticate users
-  # themselves. They delegate the decision to an
-  # external authentication service.
-  #
-  # Traefik only ENFORCES the decision.
+  # Traefik delegates auth to Authelia.
+  # Authelia decides allow/deny/redirect.
   # =================================================
   middlewares:
-    # -------------------------------------------------
-    # FORWARD AUTH
-    #
-    # Purpose:
-    # - Delegates authentication to an external service
-    # - Backend applications remain completely auth-free
-    #
-    # Flow:
-    # Client -> Traefik -> Auth Service
-    #
-    # Auth Service responses:
-    # - 200 OK        -> request is forwarded to backend
-    # - 401 / 403    -> request is blocked
-    # - 302 / 307    -> client is redirected to login
-    # -------------------------------------------------
     forward-auth:
       forwardAuth:
-        # Address of the authentication service
-        # Must be reachable from the Traefik container
-        # (i.e. same Docker network)
-        address: http://auth:4180
+        # Authelia verify endpoint
+        # Must be reachable from Traefik (same network)
+        address: http://authelia:9091/api/verify?rd=https://${AUTHELIA_DOMAIN}/
 
-        # Trust X-Forwarded-* headers returned by the
-        # authentication service
+        # Trust X-Forwarded-* headers returned by Authelia
         trustForwardHeader: true
 
-        # List of headers that will be copied from the
-        # auth service response and forwarded to the backend
-        #
-        # These headers usually contain user identity info
+        # Identity headers forwarded to the backend
         authResponseHeaders:
-          - X-Forwarded-User
-          - X-Forwarded-Email
-          - X-Forwarded-Groups
+          - Remote-User
+          - Remote-Email
+          - Remote-Groups
+          - Remote-Name
