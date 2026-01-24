@@ -91,7 +91,7 @@ services:
     # VOLUMES
     # -------------------------------------------------
     volumes:
-      - /home/mertdogan/Documents/Projects/yml-notes/admin/traefik/dynamic-min:/dynamic-min:ro
+      - /opt/volumes/traefik/dynamic:/dynamic:ro
       - /opt/volumes/traefik/letsencrypt:/letsencrypt
 
     # -------------------------------------------------
