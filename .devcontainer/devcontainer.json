@@ -1,17 +1,80 @@
 {
-  "name": "yml-notes-devcontainer",
+  // Dev container identity (shown in VS Code)
+  "name": "Dev Swiss Army Container",
+
+  // Docker Compose integration
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "dev",
-  "workspaceFolder": "/workspaces",
+  "service": "helvetia",
+
+  // Workspace root inside the container
+  "workspaceFolder": "${containerWorkspaceFolder}",
+
+  // Always use the non-root user provided by the base image
   "remoteUser": "vscode",
+
+  // --------------------------------------------------
+  // Optional Dev Container Features
+  // Enable only when explicitly required
+  // --------------------------------------------------
+  /*
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/go:1": { "version": "latest" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/java:1": { "version": "21" },
+    "ghcr.io/devcontainers/features/rust:1": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
+  },
+  */
+
+  // --------------------------------------------------
+  // Optional port forwarding (development only)
+  // Container ports must still be exposed via docker-compose
+  // --------------------------------------------------
+  /*
+  "forwardPorts": [
+    3000,
+    8000,
+    8080
+  ],
+  */
+
+  // --------------------------------------------------
+  // VS Code configuration scoped to this container
+  // --------------------------------------------------
   "customizations": {
     "vscode": {
-      "extensions": ["redhat.ansible", "redhat.vscode-yaml"],
       "settings": {
+        // Format files on save
         "editor.formatOnSave": true,
-        "yaml.validate": true,
-        "ansible.validation.enabled": true
-      }
+
+        // Use Docker-specific formatter for Dockerfiles
+        "[dockerfile]": {
+          "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+        },
+
+        // Reduce noise from unicode warnings
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+
+        // Copilot quality-of-life improvement
+        "github.copilot.nextEditSuggestions.enabled": true
+      },
+
+      "extensions": [
+        // Core tooling
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+
+        // AI assistance
+        "openai.chatgpt",
+        "github.copilot",
+        "github.copilot-chat"
+      ]
     }
-  }
+  },
+
+  // Optional hook executed once after container creation
+  "postCreateCommand": "echo 'Dev environment ready'"
 }

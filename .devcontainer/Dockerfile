@@ -1,38 +1,85 @@
 #============================================================
-# Dockerfile for Python 3.12 Ansible Development Container
+# Dev Swiss Army Image
+#
+# Purpose:
+# - Portable development environment
+# - No application code
+# - No runtime services
+#
+# Philosophy:
+# - This image is a TOOLBOX, not an app
+# - Code is cloned at runtime and removed later
 #============================================================
 
-FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-#------------------------------------------------------------
-# Set non-interactive frontend for apt-get
-#------------------------------------------------------------
+# Prevent interactive prompts during package installs
 ENV DEBIAN_FRONTEND=noninteractive
 
 # ------------------------------------------------------------
-# Fix upstream issue: remove expired Yarn APT repository
-# (Not needed for Ansible / Python dev)
+# Native build tools (C/C++, native extensions, compilation)
 # ------------------------------------------------------------
-RUN rm -f /etc/apt/sources.list.d/yarn.list
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    make \
+    pkg-config \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
-# Install required OS packages
+# Core developer CLI utilities
 # ------------------------------------------------------------
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssh-client \
-    git \
+RUN apt-get update && apt-get install -y \
+    jq \
+    tree \
+    htop \
+    tmux \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# Network & debugging tools
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    iputils-ping \
+    netcat \
+    dnsutils \
+    lsof \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# Archive & compression utilities
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    xz-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# SSL / certificates (explicit for clarity)
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    openssl \
     ca-certificates \
-    sshpass \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
-# Upgrade pip and install Python tooling
+# Git (required for private repository workflow)
 # ------------------------------------------------------------
-RUN python3 -m pip install --no-cache-dir --upgrade pip \
- && python3 -m pip install --no-cache-dir \
-    ansible-core
+RUN apt-get update && apt-get install -y \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
-# Default working directory (optional, nice for CLI usage)
+# NOTE:
+# - No CMD
+# - No ENTRYPOINT
+# - Runtime behavior is controlled by docker-compose
 # ------------------------------------------------------------
-WORKDIR /workspaces

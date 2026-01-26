@@ -1,15 +1,58 @@
 #============================================================
-# Docker Compose configuration for Development Container
+# Ephemeral Dev Environment - Docker Compose
+#
+# Purpose:
+# - Run a long-lived dev container
+# - Attach VS Code
+# - Mount workspace temporarily
+#
+# This file controls HOW the image is used,
+# not WHAT the image contains.
 #============================================================
 
 services:
-  dev:
+  helvetia:
     build:
       context: .
       dockerfile: .devcontainer/Dockerfile
-    container_name: dev-container
-    volumes:
-      - .:/workspaces
-    working_dir: /workspaces/
+
+    container_name: ephemeral-dev-env
+
+    # --------------------------------------------------------
+    # Keep container alive for interactive development
+    # --------------------------------------------------------
     command: sleep infinity
     tty: true
+
+    # --------------------------------------------------------
+    # Run as non-root user from devcontainers base image
+    # --------------------------------------------------------
+    user: vscode
+
+    # --------------------------------------------------------
+    # Workspace mount
+    # Host directory is disposable
+    # --------------------------------------------------------
+    volumes:
+      - .:/workspaces
+
+    # Default directory when container starts
+    working_dir: /workspaces
+
+    # --------------------------------------------------------
+    # OPTIONAL: Port forwarding
+    #
+    # Uncomment ONLY if your app needs it
+    #
+    # ports:
+    #   - "3000:3000"   # Node.js / frontend
+    #   - "8000:8000"   # Python / API
+    #   - "8080:8080"   # Generic service
+    # --------------------------------------------------------
+
+    # --------------------------------------------------------
+    # OPTIONAL: Environment variables
+    #
+    # environment:
+    #   NODE_ENV: development
+    # --------------------------------------------------------
