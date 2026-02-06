@@ -44,7 +44,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     iputils-ping \
-    netcat \
+    netcat-openbsd \
     dnsutils \
     lsof \
     && apt-get clean \

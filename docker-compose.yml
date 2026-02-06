@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
 
-    container_name: ephemeral-dev-env
+    container_name: ephemeral-dev-ansible
 
     # --------------------------------------------------------
     # Keep container alive for interactive development

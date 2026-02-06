@@ -7,7 +7,7 @@
   "service": "helvetia",
 
   // Workspace root inside the container
-  "workspaceFolder": "${containerWorkspaceFolder}",
+  "workspaceFolder": "/workspaces/",
 
   // Always use the non-root user provided by the base image
   "remoteUser": "vscode",
@@ -16,18 +16,10 @@
   // Optional Dev Container Features
   // Enable only when explicitly required
   // --------------------------------------------------
-  /*
+
   "features": {
-    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/go:1": { "version": "latest" },
-    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/java:1": { "version": "21" },
-    "ghcr.io/devcontainers/features/rust:1": {},
-    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" }
   },
-  */
 
   // --------------------------------------------------
   // Optional port forwarding (development only)
@@ -66,6 +58,10 @@
         // Core tooling
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "redhat.vscode-yaml",
+        "redhat.ansible",
 
         // AI assistance
         "openai.chatgpt",
@@ -76,5 +72,5 @@
   },
 
   // Optional hook executed once after container creation
-  "postCreateCommand": "echo 'Dev environment ready'"
+  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt"
 }
