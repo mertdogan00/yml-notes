@@ -72,5 +72,5 @@
   },
 
   // Optional hook executed once after container creation
-  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt"
+  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r ansible/requirements.txt"
 }
