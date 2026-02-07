@@ -1,0 +1,8 @@
+{
+  "ansible.python.interpreterPath": "/workspaces/ansible/.venv/bin/python",
+  "python.defaultInterpreterPath": "/workspaces/ansible/.venv/bin/python",
+  "files.associations": {
+    "ansible/**/*.yml": "ansible",
+    "ansible/**/*.yaml": "ansible"
+  }
+}

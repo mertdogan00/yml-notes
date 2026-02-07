@@ -4,3 +4,7 @@
 
 #-- Python --#
 .venv/
+
+#-- Ansible --#
+ansible/roles/
+ansible/collections/
