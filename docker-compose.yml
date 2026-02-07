@@ -16,8 +16,7 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
 
-    container_name: ephemeral-dev-ansible
-
+    container_name: yml-notes
     # --------------------------------------------------------
     # Keep container alive for interactive development
     # --------------------------------------------------------

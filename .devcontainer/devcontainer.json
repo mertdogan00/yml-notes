@@ -1,6 +1,6 @@
 {
   // Dev container identity (shown in VS Code)
-  "name": "Dev Swiss Army Container",
+  "name": "Yml Notes",
 
   // Docker Compose integration
   "dockerComposeFile": "../docker-compose.yml",
@@ -62,6 +62,7 @@
         // Python support
         "ms-python.python",
         "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
 
         // YAML and Ansible support
         "redhat.vscode-yaml",
@@ -76,5 +77,5 @@
   },
 
   // Optional hook executed once after container creation
-  "postCreateCommand": "python -m venv ansible/.venv && ansible/.venv/bin/pip install -r ansible/requirements.txt"
+  "postCreateCommand": "sh ansible/bootstrap.sh"
 }
